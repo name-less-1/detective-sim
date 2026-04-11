@@ -1,0 +1,85 @@
+<%# views/partials/header.ejs %>
+<%# ─────────────────────────────────────────────────────────── %>
+<%# Shared navigation header included in every page.           %>
+<%# Receives: currentPath, hasActiveGame, playerName (optional)%>
+<%# ─────────────────────────────────────────────────────────── %>
+
+<header class="site-header">
+  <div class="header-inner">
+
+    <%# ── LOGO ──────────────────────────────────────────────── %>
+    <a href="/" class="logo">
+      <span class="logo-icon">🕵️</span>
+      <span class="logo-text">Detective<span class="logo-accent">AI</span></span>
+    </a>
+
+    <%# ── NAV ───────────────────────────────────────────────── %>
+    <nav class="site-nav">
+
+      <% if (hasActiveGame) { %>
+        <a href="/game"
+           class="nav-link <%= currentPath === '/game' ? 'nav-link--active' : '' %>">
+          📋 Case Board
+        </a>
+      <% } %>
+
+      <a href="/auth/history"
+         class="nav-link <%= currentPath === '/auth/history' ? 'nav-link--active' : '' %>">
+        📁 Case History
+      </a>
+
+      <%# ── PLAYER NAME ──────────────────────────────────────── %>
+      <div class="nav-player">
+        <% if (locals.playerName) { %>
+          <span class="player-greeting">
+            🔎 <strong><%= playerName %></strong>
+          </span>
+          <form action="/auth/clearname" method="POST" class="inline-form">
+            <button type="submit" class="btn-ghost btn-sm">Sign Out</button>
+          </form>
+        <% } else { %>
+          <form action="/auth/setname" method="POST" class="name-form">
+            <input
+              type="text"
+              name="playerName"
+              placeholder="Enter detective name..."
+              maxlength="30"
+              class="name-input"
+              required
+            />
+            <button type="submit" class="btn-primary btn-sm">Set Name</button>
+          </form>
+        <% } %>
+      </div>
+
+    </nav>
+
+    <%# ── MOBILE MENU TOGGLE ────────────────────────────────── %>
+    <button class="mobile-menu-toggle" aria-label="Toggle menu" onclick="toggleMobileMenu()">
+      ☰
+    </button>
+
+  </div>
+
+  <%# ── ACTIVE GAME BANNER ────────────────────────────────────── %>
+  <% if (hasActiveGame && currentPath !== '/game' && currentPath !== '/game/verdict') { %>
+    <div class="active-game-banner">
+      ⚠️ You have an active investigation.
+      <a href="/game" class="banner-link">Return to case board →</a>
+    </div>
+  <% } %>
+
+</header>
+
+<%# ── FLASH MESSAGES ──────────────────────────────────────────── %>
+<% if (locals.flash && locals.flash.notice) { %>
+  <div class="flash-notice">
+    <%= flash.notice %>
+  </div>
+<% } %>
+
+<script>
+  function toggleMobileMenu() {
+    document.querySelector('.site-nav').classList.toggle('site-nav--open');
+  }
+</script>

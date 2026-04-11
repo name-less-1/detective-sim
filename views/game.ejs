@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DetectiveAI — <%= caseTitle %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:       #111111;
+      --paper:     #ffffff;
+      --bg:        #f5f5f0;
+      --red:       #c0392b;
+      --red-dark:  #922b21;
+      --green:     #1e8449;
+      --muted:     #666666;
+      --border:    #dddddd;
+      --header:    #1a1a1a;
+    }
+
+    html { font-size: 16px; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Crimson Pro', Georgia, serif;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ───────────────────────────────────────────── */
+    .site-header {
+      background: var(--header);
+      color: white;
+      padding: 0 1.25rem;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 300;
+      border-bottom: 3px solid var(--red);
+    }
+
+    .logo {
+      display: flex; align-items: center; gap: 0.4rem;
+      text-decoration: none; color: white; flex-shrink: 0;
+    }
+    .logo-text { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 900; }
+    .logo-accent { color: var(--red); }
+
+    .header-center { text-align: center; flex: 1; padding: 0 0.5rem; min-width: 0; }
+    .case-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.55rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(255,255,255,0.4); display: block; margin-bottom: 1px;
+    }
+    .case-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.9rem; font-weight: 700; color: white;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      display: block;
+    }
+
+    .header-right { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
+
+    .turn-counter { display: flex; align-items: center; gap: 0.4rem; }
+    .turn-pips { display: flex; gap: 4px; }
+    .pip {
+      width: 10px; height: 10px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.25); background: transparent;
+      transition: all 0.3s;
+    }
+    .pip.used { background: var(--red); border-color: var(--red); }
+    .pip.left { background: white; border-color: white; }
+    .turns-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.6rem; color: rgba(255,255,255,0.45);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+
+    .btn-abandon {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.06em;
+      padding: 0.25rem 0.6rem; background: transparent;
+      color: rgba(255,255,255,0.3); border: 1px solid rgba(255,255,255,0.12);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-abandon:hover { color: var(--red); border-color: var(--red); }
+
+    /* ── ACCUSATION BANNER ────────────────────────────────── */
+    .phase-banner {
+      background: var(--red); color: white;
+      text-align: center; padding: 0.6rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       DESKTOP LAYOUT (3 columns)
+    ══════════════════════════════════════════════════════ */
+    .game-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr 260px;
+      height: calc(100vh - 52px);
+    }
+
+    .sidebar {
+      background: var(--paper);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-right { border-right: none; border-left: 1px solid var(--border); }
+
+    .sidebar-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--muted); padding: 0.8rem 1.25rem;
+      background: var(--bg); border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 10; flex-shrink: 0;
+    }
+
+    .case-board {
+      display: flex; flex-direction: column;
+      overflow-y: auto; background: var(--bg);
+    }
+
+    /* ── SUSPECT CARDS ────────────────────────────────────── */
+    .suspect-card {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .suspect-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem; font-weight: 700; margin-bottom: 0.1rem; color: var(--ink);
+    }
+    .suspect-role {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.6rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem;
+    }
+    .suspect-alibi {
+      font-size: 0.88rem; font-style: italic;
+      color: var(--muted); line-height: 1.5; margin-bottom: 0.7rem;
+    }
+    .btn-interrogate {
+      width: 100%; padding: 0.4rem 0;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+      background: var(--ink); color: white; border: none; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-interrogate:hover:not(:disabled) { background: var(--red); }
+    .btn-interrogate:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+    .btn-accuse {
+      width: 100%; padding: 0.4rem 0;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+      background: var(--red); color: white; border: none; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-accuse:hover { background: var(--red-dark); }
+
+    /* ── SYNOPSIS ─────────────────────────────────────────── */
+    .synopsis {
+      background: var(--paper); border-bottom: 1px solid var(--border);
+      padding: 0.9rem 1.25rem;
+      display: flex; gap: 0.6rem; align-items: flex-start;
+    }
+    .synopsis-text { font-size: 0.95rem; font-style: italic; color: var(--muted); line-height: 1.6; }
+
+    /* ── ACTION BUTTONS ───────────────────────────────────── */
+    .actions-bar {
+      padding: 0.85rem 1.25rem; background: var(--paper);
+      border-bottom: 1px solid var(--border);
+      display: flex; gap: 0.6rem;
+    }
+    .action-btn {
+      flex: 1; padding: 0.65rem 0.4rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.05em; text-transform: uppercase;
+      background: var(--bg); color: var(--ink);
+      border: 1.5px solid var(--border); cursor: pointer;
+      transition: all 0.2s;
+      display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+    }
+    .action-btn:hover:not(:disabled) { background: var(--ink); color: white; border-color: var(--ink); }
+    .action-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .action-btn-icon { font-size: 1.2rem; }
+    .action-btn-count { font-size: 0.55rem; opacity: 0.5; }
+
+    /* ── FLASH ────────────────────────────────────────────── */
+    .flash-wrap { padding: 1rem 1.25rem 0; }
+    .flash-panel {
+      border: 1.5px solid var(--ink); background: var(--paper);
+      animation: slideIn 0.3s ease; margin-bottom: 0.6rem;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .flash-header {
+      background: var(--ink); color: white; padding: 0.4rem 1rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .flash-body { padding: 0.8rem 1rem; }
+    .flash-clue-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem;
+    }
+    .flash-clue-desc { font-size: 0.92rem; line-height: 1.6; color: #444; }
+    .flash-speaker {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.6rem; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.25rem;
+    }
+    .flash-dialogue {
+      font-size: 0.92rem; font-style: italic; line-height: 1.6;
+      border-left: 3px solid var(--border); padding-left: 0.75rem;
+    }
+    .flash-notice-text { font-size: 0.9rem; font-style: italic; color: var(--muted); }
+
+    /* ── EVIDENCE BOARD ───────────────────────────────────── */
+    .evidence-section { padding: 1.1rem 1.25rem; flex: 1; }
+    .evidence-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.9rem; }
+    .evidence-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+    }
+    .evidence-count {
+      background: var(--ink); color: white;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.58rem; padding: 0.1rem 0.4rem;
+    }
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 0.75rem;
+    }
+    .clue-card {
+      background: var(--paper); border: 1.5px solid var(--border);
+      padding: 0.85rem 1rem; position: relative;
+      animation: cardIn 0.3s ease both;
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: scale(0.98); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .clue-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.58rem; text-transform: uppercase;
+      letter-spacing: 0.08em; margin-bottom: 0.35rem;
+    }
+    .clue-tag.scene  { color: #27ae60; }
+    .clue-tag.cctv   { color: #2980b9; }
+    .clue-tag.phone  { color: #8e44ad; }
+    .clue-tag.interr { color: #d35400; }
+    .clue-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.92rem; font-weight: 700;
+      margin-bottom: 0.25rem; color: var(--ink); line-height: 1.3;
+    }
+    .clue-desc { font-size: 0.85rem; line-height: 1.5; color: #555; }
+    .clue-turn {
+      position: absolute; top: 0.5rem; right: 0.6rem;
+      font-family: 'IBM Plex Mono', monospace; font-size: 0.55rem; color: var(--border);
+    }
+    .evidence-empty {
+      grid-column: 1/-1; text-align: center; padding: 3rem 1rem; color: var(--muted);
+    }
+    .evidence-empty-icon { font-size: 2rem; margin-bottom: 0.6rem; }
+    .evidence-empty-text {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.8;
+    }
+
+    /* ── LOG ──────────────────────────────────────────────── */
+    .log-entry {
+      padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border);
+      display: flex; gap: 0.65rem; align-items: flex-start;
+    }
+    .log-turn {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.58rem; background: var(--ink); color: white;
+      padding: 0.12rem 0.35rem; flex-shrink: 0; margin-top: 0.15rem;
+    }
+    .log-action { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; color: var(--ink); margin-bottom: 0.15rem; }
+    .log-result { font-size: 0.82rem; font-style: italic; color: var(--muted); line-height: 1.4; }
+    .log-empty {
+      padding: 2rem 1.25rem; text-align: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.08em; line-height: 1.8;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       MOBILE LAYOUT
+    ══════════════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+
+      /* Stack everything, add bottom padding for tab bar */
+      .game-layout {
+        display: block;
+        height: auto;
+        padding-bottom: 64px; /* space for tab bar */
+      }
+
+      /* Hide desktop sidebars */
+      .sidebar, .sidebar-right { display: none; }
+      .case-board { display: block; overflow-y: visible; }
+
+      /* Mobile tab panels */
+      .mobile-panel {
+        display: none;
+        background: var(--bg);
+      }
+      .mobile-panel.active { display: block; }
+
+      /* Suspects panel */
+      #panel-suspects .suspect-card { border-bottom: 1px solid var(--border); background: var(--paper); }
+
+      /* Evidence panel — show actions + flash + evidence */
+      /* Log panel */
+      #panel-log .log-entry { background: var(--paper); }
+
+      /* ── BOTTOM TAB BAR ──────────────────────────────── */
+      .mobile-tabs {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        height: 56px;
+        background: var(--header);
+        border-top: 2px solid var(--red);
+        z-index: 500;
+      }
+
+      .tab-btn {
+        flex: 1; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 3px;
+        background: transparent; border: none; cursor: pointer;
+        color: rgba(255,255,255,0.4); transition: color 0.2s;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.55rem; letter-spacing: 0.08em; text-transform: uppercase;
+        padding: 0;
+      }
+      .tab-btn.active { color: white; border-top: 2px solid var(--red); margin-top: -2px; }
+      .tab-btn-icon { font-size: 1.2rem; }
+
+      /* Smaller header on mobile */
+      .turns-label { display: none; }
+      .case-label { display: none; }
+      .case-name { font-size: 0.8rem; }
+
+      /* Evidence grid single column on mobile */
+      .evidence-grid { grid-template-columns: 1fr; }
+
+      /* Actions bar wrap on mobile */
+      .actions-bar { flex-wrap: wrap; gap: 0.5rem; }
+      .action-btn { min-width: calc(50% - 0.25rem); flex: none; }
+    }
+
+    /* Desktop — hide mobile tabs */
+    @media (min-width: 769px) {
+      .mobile-tabs   { display: none; }
+      .mobile-panel  { display: contents !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── HEADER ──────────────────────────────────────────────── -->
+  <header class="site-header">
+    <a href="/" class="logo">
+      <span>🕵️</span>
+      <span class="logo-text">Detective<span class="logo-accent">AI</span></span>
+    </a>
+
+    <div class="header-center">
+      <span class="case-label">Active Investigation</span>
+      <span class="case-name"><%= caseTitle %></span>
+    </div>
+
+    <div class="header-right">
+      <div class="turn-counter">
+        <span class="turns-label">Turns</span>
+        <div class="turn-pips">
+          <% for (let i = 0; i < turnsTotal; i++) { %>
+            <div class="pip <%= i < turnsUsed ? 'used' : 'left' %>"></div>
+          <% } %>
+        </div>
+        <span class="turns-label"><%= turnsLeft %> left</span>
+      </div>
+      <form action="/game/restart" method="POST" style="display:inline;">
+        <button type="submit" class="btn-abandon"
+          onclick="return confirm('Abandon this investigation?')">✕</button>
+      </form>
+    </div>
+  </header>
+
+  <!-- ── ACCUSATION BANNER ────────────────────────────────────── -->
+  <% if (phase === 'accusation') { %>
+    <div class="phase-banner">⚠️ Time's up — name your suspect</div>
+  <% } %>
+
+  <!-- ══════════════════════════════════════════════════════════
+       DESKTOP LAYOUT
+  ══════════════════════════════════════════════════════════ -->
+  <div class="game-layout">
+
+    <!-- LEFT: Suspects -->
+    <aside class="sidebar">
+      <div class="sidebar-title">Suspects — <%= suspects.length %></div>
+      <% suspects.forEach(suspect => { %>
+        <div class="suspect-card">
+          <div class="suspect-name"><%= suspect.name %></div>
+          <div class="suspect-role"><%= suspect.role %></div>
+          <div class="suspect-alibi">"<%= suspect.alibi %>"</div>
+          <% if (phase === 'investigation') { %>
+            <form action="/game/action" method="POST">
+              <input type="hidden" name="action" value="interrogate" />
+              <input type="hidden" name="suspectId" value="<%= suspect.id %>" />
+              <button type="submit" class="btn-interrogate"
+                <%= suspectAvailability[suspect.id] ? '' : 'disabled' %>>
+                <%= suspectAvailability[suspect.id] ? '🗣 Interrogate' : '✓ Exhausted' %>
+              </button>
+            </form>
+          <% } else if (phase === 'accusation') { %>
+            <form action="/game/accuse" method="POST">
+              <input type="hidden" name="suspectId" value="<%= suspect.id %>" />
+              <button type="submit" class="btn-accuse">⚖️ Accuse</button>
+            </form>
+          <% } %>
+        </div>
+      <% }) %>
+    </aside>
+
+    <!-- CENTER: Board -->
+    <main class="case-board">
+      <div class="synopsis">
+        <span style="font-size:1.2rem;flex-shrink:0;">📰</span>
+        <p class="synopsis-text"><%= synopsis %></p>
+      </div>
+
+      <% if (phase === 'investigation') { %>
+        <div class="actions-bar">
+          <form action="/game/action" method="POST" style="flex:1;">
+            <input type="hidden" name="action" value="inspect_scene" />
+            <button type="submit" class="action-btn" <%= actionAvailability.inspect_scene ? '' : 'disabled' %>>
+              <span class="action-btn-icon">🔍</span>
+              <span>Inspect Scene</span>
+              <span class="action-btn-count">× <%= actionCounts.inspect_scene %></span>
+            </button>
+          </form>
+          <form action="/game/action" method="POST" style="flex:1;">
+            <input type="hidden" name="action" value="check_cctv" />
+            <button type="submit" class="action-btn" <%= actionAvailability.check_cctv ? '' : 'disabled' %>>
+              <span class="action-btn-icon">📹</span>
+              <span>Check CCTV</span>
+              <span class="action-btn-count">× <%= actionCounts.check_cctv %></span>
+            </button>
+          </form>
+          <form action="/game/action" method="POST" style="flex:1;">
+            <input type="hidden" name="action" value="analyze_phone" />
+            <button type="submit" class="action-btn" <%= actionAvailability.analyze_phone ? '' : 'disabled' %>>
+              <span class="action-btn-icon">📱</span>
+              <span>Phone Logs</span>
+              <span class="action-btn-count">× <%= actionCounts.analyze_phone %></span>
+            </button>
+          </form>
+        </div>
+      <% } %>
+
+      <% if (locals.flash) { %>
+        <div class="flash-wrap">
+          <% if (flash.clue) { %>
+            <div class="flash-panel">
+              <div class="flash-header">🔎 New Evidence Found</div>
+              <div class="flash-body">
+                <div class="flash-clue-title"><%= flash.clue.title %></div>
+                <div class="flash-clue-desc"><%= flash.clue.description %></div>
+              </div>
+            </div>
+          <% } %>
+          <% if (flash.dialogue) { %>
+            <div class="flash-panel">
+              <div class="flash-header">🗣 Interrogation Response</div>
+              <div class="flash-body">
+                <div class="flash-speaker"><%= flash.dialogue.suspectName %> says:</div>
+                <div class="flash-dialogue">"<%= flash.dialogue.text %>"</div>
+              </div>
+            </div>
+          <% } %>
+          <% if (flash.notice && !flash.clue && !flash.dialogue) { %>
+            <div class="flash-panel">
+              <div class="flash-header">📋 Note</div>
+              <div class="flash-body">
+                <div class="flash-notice-text"><%= flash.notice %></div>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      <% } %>
+
+      <div class="evidence-section">
+        <div class="evidence-header">
+          <span class="evidence-title">Evidence Board</span>
+          <span class="evidence-count"><%= clues.length %></span>
+        </div>
+        <div class="evidence-grid">
+          <% if (clues.length === 0) { %>
+            <div class="evidence-empty">
+              <div class="evidence-empty-icon">🗂️</div>
+              <div class="evidence-empty-text">No evidence yet.<br>Use an action to investigate.</div>
+            </div>
+          <% } else { %>
+            <% clues.forEach(clue => { %>
+              <%
+                const history = actionHistory || [];
+                const turnFound = history.find(a => a.clueId === clue.id);
+              %>
+              <div class="clue-card">
+                <% if (turnFound) { %><span class="clue-turn">Turn <%= turnFound.turn %></span><% } %>
+                <div class="clue-tag <%= clue.action === 'inspect_scene' ? 'scene' : clue.action === 'check_cctv' ? 'cctv' : clue.action === 'analyze_phone' ? 'phone' : 'interr' %>">
+                  <%= clue.action === 'inspect_scene' ? '🔍 Scene' : clue.action === 'check_cctv' ? '📹 CCTV' : clue.action === 'analyze_phone' ? '📱 Phone' : '🗣 Interrogation' %>
+                </div>
+                <div class="clue-title"><%= clue.title %></div>
+                <div class="clue-desc"><%= clue.description %></div>
+              </div>
+            <% }) %>
+          <% } %>
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT: Log -->
+    <aside class="sidebar sidebar-right">
+      <div class="sidebar-title">Investigation Log</div>
+      <% if (actionHistory.length === 0) { %>
+        <div class="log-empty">No actions yet.<br>Begin your investigation.</div>
+      <% } else { %>
+        <% [...actionHistory].reverse().forEach(entry => { %>
+          <div class="log-entry">
+            <span class="log-turn">T<%= entry.turn %></span>
+            <div>
+              <div class="log-action"><%= entry.actionLabel %></div>
+              <% if (entry.clueId) { %>
+                <div class="log-result">"<%= clues.find(c => c.id === entry.clueId)?.title || entry.clueId %>"</div>
+              <% } else { %>
+                <div class="log-result" style="color:var(--border);">Nothing found</div>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+    </aside>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       MOBILE PANELS (shown via tabs)
+  ══════════════════════════════════════════════════════════ -->
+
+  <!-- Suspects Panel -->
+  <div class="mobile-panel active" id="panel-suspects">
+    <div class="sidebar-title">Suspects — <%= suspects.length %></div>
+    <% suspects.forEach(suspect => { %>
+      <div class="suspect-card" style="background:var(--paper);border-bottom:1px solid var(--border);">
+        <div class="suspect-name"><%= suspect.name %></div>
+        <div class="suspect-role"><%= suspect.role %></div>
+        <div class="suspect-alibi">"<%= suspect.alibi %>"</div>
+        <% if (phase === 'investigation') { %>
+          <form action="/game/action" method="POST">
+            <input type="hidden" name="action" value="interrogate" />
+            <input type="hidden" name="suspectId" value="<%= suspect.id %>" />
+            <button type="submit" class="btn-interrogate"
+              <%= suspectAvailability[suspect.id] ? '' : 'disabled' %>>
+              <%= suspectAvailability[suspect.id] ? '🗣 Interrogate' : '✓ Exhausted' %>
+            </button>
+          </form>
+        <% } else if (phase === 'accusation') { %>
+          <form action="/game/accuse" method="POST">
+            <input type="hidden" name="suspectId" value="<%= suspect.id %>" />
+            <button type="submit" class="btn-accuse">⚖️ Accuse</button>
+          </form>
+        <% } %>
+      </div>
+    <% }) %>
+  </div>
+
+  <!-- Evidence Panel -->
+  <div class="mobile-panel" id="panel-evidence">
+    <div class="synopsis" style="background:var(--paper);border-bottom:1px solid var(--border);">
+      <span style="font-size:1.1rem;flex-shrink:0;">📰</span>
+      <p class="synopsis-text"><%= synopsis %></p>
+    </div>
+
+    <% if (phase === 'investigation') { %>
+      <div class="actions-bar" style="background:var(--paper);">
+        <form action="/game/action" method="POST" style="flex:1;min-width:calc(50% - 0.25rem);">
+          <input type="hidden" name="action" value="inspect_scene" />
+          <button type="submit" class="action-btn" <%= actionAvailability.inspect_scene ? '' : 'disabled' %>>
+            <span class="action-btn-icon">🔍</span><span>Scene</span>
+          </button>
+        </form>
+        <form action="/game/action" method="POST" style="flex:1;min-width:calc(50% - 0.25rem);">
+          <input type="hidden" name="action" value="check_cctv" />
+          <button type="submit" class="action-btn" <%= actionAvailability.check_cctv ? '' : 'disabled' %>>
+            <span class="action-btn-icon">📹</span><span>CCTV</span>
+          </button>
+        </form>
+        <form action="/game/action" method="POST" style="flex:1;min-width:calc(50% - 0.25rem);">
+          <input type="hidden" name="action" value="analyze_phone" />
+          <button type="submit" class="action-btn" <%= actionAvailability.analyze_phone ? '' : 'disabled' %>>
+            <span class="action-btn-icon">📱</span><span>Phone</span>
+          </button>
+        </form>
+      </div>
+    <% } %>
+
+    <% if (locals.flash) { %>
+      <div class="flash-wrap">
+        <% if (flash.clue) { %>
+          <div class="flash-panel">
+            <div class="flash-header">🔎 New Evidence Found</div>
+            <div class="flash-body">
+              <div class="flash-clue-title"><%= flash.clue.title %></div>
+              <div class="flash-clue-desc"><%= flash.clue.description %></div>
+            </div>
+          </div>
+        <% } %>
+        <% if (flash.dialogue) { %>
+          <div class="flash-panel">
+            <div class="flash-header">🗣 Response</div>
+            <div class="flash-body">
+              <div class="flash-speaker"><%= flash.dialogue.suspectName %> says:</div>
+              <div class="flash-dialogue">"<%= flash.dialogue.text %>"</div>
+            </div>
+          </div>
+        <% } %>
+        <% if (flash.notice && !flash.clue && !flash.dialogue) { %>
+          <div class="flash-panel">
+            <div class="flash-header">📋 Note</div>
+            <div class="flash-body"><div class="flash-notice-text"><%= flash.notice %></div></div>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+
+    <div class="evidence-section">
+      <div class="evidence-header">
+        <span class="evidence-title">Evidence Board</span>
+        <span class="evidence-count"><%= clues.length %></span>
+      </div>
+      <div class="evidence-grid">
+        <% if (clues.length === 0) { %>
+          <div class="evidence-empty">
+            <div class="evidence-empty-icon">🗂️</div>
+            <div class="evidence-empty-text">No evidence yet.<br>Use an action above.</div>
+          </div>
+        <% } else { %>
+          <% clues.forEach(clue => { %>
+            <%
+              const history2 = actionHistory || [];
+              const turnFound2 = history2.find(a => a.clueId === clue.id);
+            %>
+            <div class="clue-card">
+              <% if (turnFound2) { %><span class="clue-turn">T<%= turnFound2.turn %></span><% } %>
+              <div class="clue-tag <%= clue.action === 'inspect_scene' ? 'scene' : clue.action === 'check_cctv' ? 'cctv' : clue.action === 'analyze_phone' ? 'phone' : 'interr' %>">
+                <%= clue.action === 'inspect_scene' ? '🔍 Scene' : clue.action === 'check_cctv' ? '📹 CCTV' : clue.action === 'analyze_phone' ? '📱 Phone' : '🗣 Interrogation' %>
+              </div>
+              <div class="clue-title"><%= clue.title %></div>
+              <div class="clue-desc"><%= clue.description %></div>
+            </div>
+          <% }) %>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Log Panel -->
+  <div class="mobile-panel" id="panel-log">
+    <div class="sidebar-title">Investigation Log</div>
+    <% if (actionHistory.length === 0) { %>
+      <div class="log-empty">No actions yet.</div>
+    <% } else { %>
+      <% [...actionHistory].reverse().forEach(entry => { %>
+        <div class="log-entry" style="background:var(--paper);">
+          <span class="log-turn">T<%= entry.turn %></span>
+          <div>
+            <div class="log-action"><%= entry.actionLabel %></div>
+            <% if (entry.clueId) { %>
+              <div class="log-result">"<%= clues.find(c => c.id === entry.clueId)?.title || entry.clueId %>"</div>
+            <% } else { %>
+              <div class="log-result" style="color:var(--border);">Nothing found</div>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
+
+  <!-- ── MOBILE TAB BAR ───────────────────────────────────────── -->
+  <nav class="mobile-tabs">
+    <button class="tab-btn active" onclick="switchTab('suspects', this)">
+      <span class="tab-btn-icon">👤</span>
+      <span>Suspects</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('evidence', this)">
+      <span class="tab-btn-icon">🔍</span>
+      <span>Evidence</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('log', this)">
+      <span class="tab-btn-icon">📋</span>
+      <span>Log</span>
+    </button>
+  </nav>
+
+  <script>
+    function switchTab(name, btn) {
+      // Hide all panels
+      document.querySelectorAll('.mobile-panel').forEach(p => p.classList.remove('active'));
+      // Deactivate all tabs
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      // Show selected panel
+      document.getElementById('panel-' + name).classList.add('active');
+      // Activate tab
+      btn.classList.add('active');
+      // Scroll to top
+      window.scrollTo(0, 0);
+    }
+
+    // Auto-switch to evidence tab after an action (flash is present)
+    <% if (locals.flash && (flash.clue || flash.dialogue || flash.notice)) { %>
+      document.addEventListener('DOMContentLoaded', () => {
+        const evidenceBtn = document.querySelectorAll('.tab-btn')[1];
+        if (evidenceBtn) switchTab('evidence', evidenceBtn);
+      });
+    <% } %>
+  </script>
+
+</body>
+</html>

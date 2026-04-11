@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DetectiveAI — Verdict</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:        #0d0d0d;
+      --paper:      #f2ede4;
+      --paper-dark: #e8e0d0;
+      --red:        #c0392b;
+      --red-dark:   #922b21;
+      --green:      #1e8449;
+      --gold:       #b8972a;
+      --muted:      #7a7060;
+      --border:     #c8bfa8;
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      background: var(--paper-dark);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23e8e0d0'/%3E%3Ccircle cx='1' cy='1' r='0.6' fill='%23c8bfa8' opacity='0.3'/%3E%3C/svg%3E");
+      color: var(--ink);
+      font-family: 'Crimson Pro', Georgia, serif;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ───────────────────────────────────────────── */
+    .site-header {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 0.6rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid <%= verdict.isCorrect ? '#1e8449' : '#c0392b' %>;
+    }
+
+    .logo {
+      display: flex; align-items: center; gap: 0.5rem;
+      text-decoration: none; color: var(--paper);
+    }
+
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem; font-weight: 900;
+    }
+
+    .logo-accent { color: var(--red); }
+
+    .header-right {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: rgba(242,237,228,0.4);
+      text-transform: uppercase;
+    }
+
+    /* ── VERDICT HERO ─────────────────────────────────────── */
+    .verdict-hero {
+      background: <%= verdict.isCorrect ? '#0f2418' : '#1a0a08' %>;
+      color: var(--paper);
+      padding: 3.5rem 4rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 2rem;
+      align-items: center;
+      border-bottom: 3px solid <%= verdict.isCorrect ? '#1e8449' : '#c0392b' %>;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Big watermark */
+    .verdict-hero::before {
+      content: '<%= verdict.isCorrect ? "SOLVED" : "FAILED" %>';
+      position: absolute;
+      right: -2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: 'Playfair Display', serif;
+      font-size: 9rem;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      color: <%= verdict.isCorrect ? 'rgba(30,132,73,0.12)' : 'rgba(192,57,43,0.12)' %>;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .verdict-eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: <%= verdict.isCorrect ? '#5dade2' : '#e59866' %>;
+      margin-bottom: 0.75rem;
+    }
+
+    .verdict-headline {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+    }
+
+    .verdict-headline em {
+      font-style: italic;
+      color: <%= verdict.isCorrect ? '#27ae60' : '#e74c3c' %>;
+    }
+
+    .verdict-subline {
+      font-size: 1rem;
+      font-weight: 300;
+      color: rgba(242,237,228,0.55);
+      line-height: 1.6;
+    }
+
+    /* ── GRADE BADGE ──────────────────────────────────────── */
+    .grade-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 110px;
+      height: 110px;
+      border: 2px solid <%= verdict.isCorrect ? '#27ae60' : '#e74c3c' %>;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .grade-letter {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem;
+      font-weight: 900;
+      color: <%= verdict.isCorrect ? '#27ae60' : '#e74c3c' %>;
+      line-height: 1;
+    }
+
+    .grade-label-text {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(242,237,228,0.4);
+      text-align: center;
+      margin-top: 0.2rem;
+    }
+
+    .grade-score {
+      position: absolute;
+      bottom: -0.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      padding: 0.15rem 0.6rem;
+      border: 1px solid <%= verdict.isCorrect ? '#27ae60' : '#e74c3c' %>;
+      color: var(--paper);
+      white-space: nowrap;
+    }
+
+    /* ── MAIN CONTENT ─────────────────────────────────────── */
+    .verdict-body {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    /* ── REASONING SECTION ────────────────────────────────── */
+    .section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    .reasoning-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-bottom: 2rem;
+    }
+
+    .reasoning-item {
+      display: flex;
+      gap: 0.85rem;
+      align-items: flex-start;
+      padding: 0.75rem 1rem;
+      border-left: 3px solid transparent;
+      background: var(--paper);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .reasoning-item:nth-child(1) { animation-delay: 0.1s; }
+    .reasoning-item:nth-child(2) { animation-delay: 0.2s; }
+    .reasoning-item:nth-child(3) { animation-delay: 0.3s; }
+    .reasoning-item:nth-child(4) { animation-delay: 0.4s; }
+    .reasoning-item:nth-child(5) { animation-delay: 0.5s; }
+    .reasoning-item:nth-child(6) { animation-delay: 0.6s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reasoning-item.success  { border-left-color: var(--green); }
+    .reasoning-item.failure  { border-left-color: var(--red); }
+    .reasoning-item.positive { border-left-color: #2980b9; }
+    .reasoning-item.negative { border-left-color: #e67e22; }
+    .reasoning-item.warning  { border-left-color: var(--gold); }
+    .reasoning-item.info     { border-left-color: var(--border); }
+
+    .reasoning-icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .reasoning-text { color: var(--ink); }
+
+    /* ── SOLUTION SUMMARY ─────────────────────────────────── */
+    .solution-box {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .solution-header {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(242,237,228,0.4);
+      margin-bottom: 0.75rem;
+    }
+
+    .solution-text {
+      font-size: 0.95rem;
+      font-style: italic;
+      line-height: 1.75;
+      color: rgba(242,237,228,0.8);
+    }
+
+    /* ── RIGHT PANEL ──────────────────────────────────────── */
+    .verdict-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .stat-box {
+      background: var(--paper);
+      border: 1.5px solid var(--border);
+      padding: 1.25rem;
+    }
+
+    .stat-box-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Score breakdown */
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .score-row:last-child { border-bottom: none; }
+
+    .score-row-label { color: var(--muted); font-size: 0.82rem; }
+    .score-row-value {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+
+    .score-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 0.75rem;
+      margin-top: 0.5rem;
+      border-top: 2px solid var(--ink);
+    }
+
+    .score-total-label {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .score-total-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+    }
+
+    /* Evidence lists */
+    .evidence-list { display: flex; flex-direction: column; gap: 0.4rem; }
+
+    .evidence-item {
+      font-size: 0.82rem;
+      padding: 0.35rem 0.6rem;
+      border-left: 3px solid var(--border);
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .evidence-item.found   { border-left-color: var(--green); color: var(--ink); }
+    .evidence-item.missed  { border-left-color: var(--red); }
+
+    .evidence-none {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--border);
+      letter-spacing: 0.05em;
+    }
+
+    /* Action counts */
+    .action-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.35rem 0;
+      font-size: 0.85rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .action-row:last-child { border-bottom: none; }
+    .action-row-count {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+    }
+
+    /* ── CTA BUTTONS ──────────────────────────────────────── */
+    .cta-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-top: 0.5rem;
+    }
+
+    .btn-new-game {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--ink);
+      color: var(--paper);
+      border: none;
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-align: center;
+    }
+    .btn-new-game:hover { background: var(--red); }
+
+    .btn-history {
+      width: 100%;
+      padding: 0.6rem;
+      background: transparent;
+      color: var(--muted);
+      border: 1.5px solid var(--border);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+    .btn-history:hover { border-color: var(--ink); color: var(--ink); }
+
+    /* ── RESPONSIVE ───────────────────────────────────────── */
+    @media (max-width: 860px) {
+      .verdict-hero { grid-template-columns: 1fr; padding: 2rem; }
+      .grade-badge { display: none; }
+      .verdict-body { grid-template-columns: 1fr; padding: 1.5rem; }
+      .verdict-hero::before { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── HEADER ──────────────────────────────────────────────── -->
+  <header class="site-header">
+    <a href="/" class="logo">
+      <span>🕵️</span>
+      <span class="logo-text">Detective<span class="logo-accent">AI</span></span>
+    </a>
+    <div class="header-right"><%= caseTitle %> &nbsp;·&nbsp; <%= difficulty %></div>
+  </header>
+
+  <!-- ── VERDICT HERO ─────────────────────────────────────────── -->
+  <div class="verdict-hero">
+    <div>
+      <p class="verdict-eyebrow">
+        <%= verdict.isCorrect ? '✓ Case Closed' : '✗ Case Unsolved' %>
+        &nbsp;·&nbsp; <%= verdict.turnsUsed %> of <%= verdict.turnsTotal %> turns used
+      </p>
+
+      <h1 class="verdict-headline">
+        <% if (verdict.isCorrect) { %>
+          You got the<br><em>right person.</em>
+        <% } else { %>
+          Wrong suspect.<br><em><%= verdict.guiltyName %> was guilty.</em>
+        <% } %>
+      </h1>
+
+      <p class="verdict-subline">
+        <% if (verdict.isCorrect) { %>
+          <%= verdict.guiltyName %>, <%= verdict.guiltyRole %> — found guilty.
+          Your investigation earned a score of <%= verdict.score %>/100.
+        <% } else { %>
+          You accused <%= verdict.accusedName %>.
+          The real culprit was <%= verdict.guiltyName %>, <%= verdict.guiltyRole %>.
+        <% } %>
+      </p>
+    </div>
+
+    <!-- Grade badge -->
+    <div class="grade-badge">
+      <div class="grade-letter"><%= verdict.grade %></div>
+      <div class="grade-label-text"><%= verdict.gradeLabel %></div>
+      <div class="grade-score"><%= verdict.score %> / 100</div>
+    </div>
+  </div>
+
+  <!-- ── BODY ─────────────────────────────────────────────────── -->
+  <div class="verdict-body">
+
+    <!-- Left: reasoning + solution -->
+    <div>
+
+      <div class="section-label">Case Debrief</div>
+
+      <div class="reasoning-list">
+        <% verdict.reasoning.forEach(item => { %>
+          <div class="reasoning-item <%= item.type %>">
+            <span class="reasoning-icon">
+              <% if (item.type === 'success')  { %>✅<% } %>
+              <% if (item.type === 'failure')  { %>❌<% } %>
+              <% if (item.type === 'positive') { %>🔵<% } %>
+              <% if (item.type === 'negative') { %>🟠<% } %>
+              <% if (item.type === 'warning')  { %>⚠️<% } %>
+              <% if (item.type === 'info')     { %>📋<% } %>
+            </span>
+            <span class="reasoning-text"><%= item.text %></span>
+          </div>
+        <% }) %>
+      </div>
+
+      <!-- Solution summary -->
+      <div class="section-label">What Really Happened</div>
+      <div class="solution-box">
+        <div class="solution-header">🔐 Case Solution — Classified</div>
+        <p class="solution-text"><%= verdict.solutionSummary %></p>
+      </div>
+
+    </div>
+
+    <!-- Right: stats sidebar -->
+    <div class="verdict-sidebar">
+
+      <!-- Score breakdown -->
+      <div class="stat-box">
+        <div class="stat-box-title">Score Breakdown</div>
+        <div class="score-row">
+          <span class="score-row-label">Correct accusation</span>
+          <span class="score-row-value">+<%= verdict.accusationScore %></span>
+        </div>
+        <div class="score-row">
+          <span class="score-row-label">Key evidence found</span>
+          <span class="score-row-value">+<%= verdict.keyEvidenceScore %></span>
+        </div>
+        <div class="score-row">
+          <span class="score-row-label">Efficiency bonus</span>
+          <span class="score-row-value">+<%= verdict.efficiencyScore %></span>
+        </div>
+        <div class="score-total">
+          <span class="score-total-label">Final Score</span>
+          <span class="score-total-value"><%= verdict.score %>/100</span>
+        </div>
+      </div>
+
+      <!-- Key evidence -->
+      <div class="stat-box">
+        <div class="stat-box-title">Key Evidence</div>
+        <div class="evidence-list">
+          <% if (verdict.foundKeyEvidence.length > 0) { %>
+            <% verdict.foundKeyEvidence.forEach(clue => { %>
+              <div class="evidence-item found">✓ <%= clue.title %></div>
+            <% }) %>
+          <% } %>
+          <% if (verdict.missedKeyEvidence.length > 0) { %>
+            <% verdict.missedKeyEvidence.forEach(clue => { %>
+              <div class="evidence-item missed">✗ <%= clue.title %></div>
+            <% }) %>
+          <% } %>
+          <% if (verdict.foundKeyEvidence.length === 0 && verdict.missedKeyEvidence.length === 0) { %>
+            <div class="evidence-none">No key evidence in this case</div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Action usage -->
+      <div class="stat-box">
+        <div class="stat-box-title">Actions Used</div>
+        <div class="action-row">
+          <span>🔍 Scene Inspection</span>
+          <span class="action-row-count"><%= verdict.actionCounts.inspect_scene %>x</span>
+        </div>
+        <div class="action-row">
+          <span>📹 CCTV Review</span>
+          <span class="action-row-count"><%= verdict.actionCounts.check_cctv %>x</span>
+        </div>
+        <div class="action-row">
+          <span>📱 Phone Analysis</span>
+          <span class="action-row-count"><%= verdict.actionCounts.analyze_phone %>x</span>
+        </div>
+        <div class="action-row">
+          <span>🗣 Interrogations</span>
+          <span class="action-row-count"><%= verdict.actionCounts.interrogate %>x</span>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="cta-group">
+        <form action="/game/restart" method="POST">
+          <button type="submit" class="btn-new-game">🔍 Start New Investigation</button>
+        </form>
+        <a href="/auth/history" class="btn-history">📁 View Case History</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Animate score counting up
+    const scoreEl = document.querySelector('.score-total-value');
+    if (scoreEl) {
+      const target = <%= verdict.score %>;
+      let current = 0;
+      const step = Math.ceil(target / 40);
+      const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        scoreEl.textContent = current + '/100';
+        if (current >= target) clearInterval(timer);
+      }, 30);
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DetectiveAI — Case History</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:        #0d0d0d;
+      --paper:      #f2ede4;
+      --paper-dark: #e8e0d0;
+      --red:        #c0392b;
+      --green:      #1e8449;
+      --gold:       #b8972a;
+      --muted:      #7a7060;
+      --border:     #c8bfa8;
+    }
+
+    body {
+      background: var(--paper-dark);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23e8e0d0'/%3E%3Ccircle cx='1' cy='1' r='0.6' fill='%23c8bfa8' opacity='0.3'/%3E%3C/svg%3E");
+      color: var(--ink);
+      font-family: 'Crimson Pro', Georgia, serif;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ───────────────────────────────────────────── */
+    .site-header {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 0.6rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--red);
+    }
+
+    .logo {
+      display: flex; align-items: center; gap: 0.5rem;
+      text-decoration: none; color: var(--paper);
+    }
+    .logo-text { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 900; }
+    .logo-accent { color: var(--red); }
+
+    .nav-link {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(242,237,228,0.45); text-decoration: none; transition: color 0.2s;
+    }
+    .nav-link:hover { color: var(--paper); }
+
+    /* ── PAGE HEADER ──────────────────────────────────────── */
+    .page-header {
+      padding: 2.5rem 3rem 1.5rem;
+      border-bottom: 1.5px solid var(--border);
+      background: var(--paper);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .page-eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 0.4rem;
+    }
+
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; font-weight: 900; letter-spacing: -0.02em;
+    }
+
+    .page-subtitle {
+      font-size: 0.95rem; color: var(--muted); font-style: italic; margin-top: 0.25rem;
+    }
+
+    .btn-clear {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.4rem 1rem; background: transparent;
+      border: 1.5px solid var(--border); color: var(--muted); cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-clear:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── STATS BAR ────────────────────────────────────────── */
+    .stats-bar {
+      display: flex;
+      background: var(--paper);
+      border-bottom: 1.5px solid var(--border);
+    }
+
+    .stat-cell {
+      flex: 1;
+      padding: 1rem 2rem;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 0.2rem;
+    }
+    .stat-cell:last-child { border-right: none; }
+
+    .stat-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem; font-weight: 700;
+    }
+    .stat-val.green { color: var(--green); }
+    .stat-val.red   { color: var(--red); }
+    .stat-val.gold  { color: var(--gold); }
+
+    .stat-lbl {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.6rem; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted);
+    }
+
+    /* ── HISTORY TABLE ────────────────────────────────────── */
+    .history-wrap { padding: 2rem 3rem; }
+
+    .section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .history-table { width: 100%; border-collapse: collapse; }
+
+    .history-table th {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--muted); padding: 0.5rem 1rem; text-align: left;
+      border-bottom: 2px solid var(--ink); background: var(--paper);
+    }
+
+    .history-table td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+      background: var(--paper);
+      vertical-align: middle;
+    }
+
+    .history-table tr:hover td { background: var(--paper-dark); }
+
+    .case-title-cell {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem; font-weight: 700;
+    }
+
+    .diff-pill {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.15rem 0.5rem; border: 1px solid var(--border); color: var(--muted);
+    }
+
+    .result-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.25rem 0.6rem; font-weight: 500;
+    }
+    .result-badge.solved { background: #d5f5e3; color: var(--green); }
+    .result-badge.failed { background: #fadbd8; color: var(--red); }
+
+    .grade-cell {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem; font-weight: 900; text-align: center;
+    }
+
+    .score-cell {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.82rem; font-weight: 500;
+    }
+
+    .turns-cell {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.78rem; color: var(--muted);
+    }
+
+    .date-cell {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem; color: var(--muted); letter-spacing: 0.03em;
+    }
+
+    /* ── EMPTY STATE ──────────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 5rem 2rem;
+      display: flex; flex-direction: column; align-items: center; gap: 1rem;
+    }
+
+    .empty-icon { font-size: 3rem; opacity: 0.3; }
+
+    .empty-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; font-weight: 700; color: var(--muted);
+    }
+
+    .empty-sub {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem; letter-spacing: 0.1em; color: var(--border); text-transform: uppercase;
+    }
+
+    .btn-start {
+      margin-top: 0.5rem;
+      padding: 0.7rem 2rem;
+      background: var(--ink); color: var(--paper); border: none;
+      font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700;
+      cursor: pointer; text-decoration: none; display: inline-block;
+      transition: background 0.2s;
+    }
+    .btn-start:hover { background: var(--red); }
+
+    @media (max-width: 768px) {
+      .page-header { padding: 1.5rem; flex-direction: column; align-items: flex-start; gap: 1rem; }
+      .history-wrap { padding: 1.5rem; }
+      .stats-bar { flex-wrap: wrap; }
+      .stat-cell { min-width: 50%; }
+      .history-table th:nth-child(5),
+      .history-table td:nth-child(5) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── HEADER ──────────────────────────────────────────────── -->
+  <header class="site-header">
+    <a href="/" class="logo">
+      <span>🕵️</span>
+      <span class="logo-text">Detective<span class="logo-accent">AI</span></span>
+    </a>
+    <a href="/" class="nav-link">← Back to Home</a>
+  </header>
+
+  <!-- ── PAGE HEADER ─────────────────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">Detective: <%= playerName %></p>
+      <h1 class="page-title">📁 Case History</h1>
+      <p class="page-subtitle">Your complete investigation record</p>
+    </div>
+    <% if (history.length > 0) { %>
+      <form action="/auth/clearhistory" method="POST"
+        onsubmit="return confirm('Clear all history? This cannot be undone.')">
+        <button type="submit" class="btn-clear">✕ Clear History</button>
+      </form>
+    <% } %>
+  </div>
+
+  <% if (history.length > 0) { %>
+
+    <%
+      const solved   = history.filter(h => h.isCorrect).length;
+      const failed   = history.filter(h => !h.isCorrect).length;
+      const avgScore = Math.round(history.reduce((s, h) => s + h.score, 0) / history.length);
+      const best     = history.reduce((b, h) => h.score > b.score ? h : b, history[0]);
+    %>
+
+    <!-- ── STATS BAR ──────────────────────────────────────────── -->
+    <div class="stats-bar">
+      <div class="stat-cell">
+        <span class="stat-val"><%= history.length %></span>
+        <span class="stat-lbl">Cases Investigated</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-val green"><%= solved %></span>
+        <span class="stat-lbl">Solved</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-val red"><%= failed %></span>
+        <span class="stat-lbl">Unsolved</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-val gold"><%= avgScore %></span>
+        <span class="stat-lbl">Avg Score</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-val"><%= best.grade %></span>
+        <span class="stat-lbl">Best Grade</span>
+      </div>
+    </div>
+
+    <!-- ── TABLE ─────────────────────────────────────────────── -->
+    <div class="history-wrap">
+      <div class="section-label">All Cases</div>
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Case</th>
+            <th>Result</th>
+            <th>Grade</th>
+            <th>Score</th>
+            <th>Turns</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% history.forEach((entry, i) => { %>
+            <tr>
+              <td style="color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:0.7rem;">
+                <%= history.length - i %>
+              </td>
+              <td>
+                <div class="case-title-cell"><%= entry.caseTitle %></div>
+                <span class="diff-pill"><%= entry.difficulty || 'medium' %></span>
+              </td>
+              <td>
+                <span class="result-badge <%= entry.isCorrect ? 'solved' : 'failed' %>">
+                  <%= entry.isCorrect ? '✓ Solved' : '✗ Failed' %>
+                </span>
+              </td>
+              <td class="grade-cell"><%= entry.grade %></td>
+              <td class="score-cell"><%= entry.score %>/100</td>
+              <td class="turns-cell"><%= entry.turnsUsed %>/<%= entry.turnsTotal %></td>
+              <td class="date-cell">
+                <%= new Date(entry.playedAt).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+  <% } else { %>
+
+    <!-- ── EMPTY STATE ────────────────────────────────────────── -->
+    <div class="empty-state">
+      <div class="empty-icon">🗂️</div>
+      <div class="empty-title">No cases on record yet.</div>
+      <div class="empty-sub">Complete an investigation to see your history here</div>
+      <a href="/" class="btn-start">🔍 Start First Investigation</a>
+    </div>
+
+  <% } %>
+
+</body>
+</html>

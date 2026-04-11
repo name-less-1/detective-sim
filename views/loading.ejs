@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DetectiveAI — Generating Case...</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --ink: #0d0d0d; --paper: #f2ede4; --red: #c0392b; }
+    body {
+      background: var(--ink); color: var(--paper);
+      font-family: 'IBM Plex Mono', monospace;
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.015) 2px, rgba(255,255,255,0.015) 4px);
+      pointer-events: none; z-index: 10;
+    }
+    .loading-wrap { position: relative; z-index: 5; display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 560px; padding: 2rem; }
+    .badge-wrap { position: relative; width: 120px; height: 120px; margin-bottom: 2.5rem; }
+    .badge-ring { width: 120px; height: 120px; border: 2px solid rgba(242,237,228,0.12); border-top-color: var(--red); border-radius: 50%; animation: spin 1.4s linear infinite; position: absolute; inset: 0; }
+    .badge-ring-2 { width: 96px; height: 96px; border: 1px solid rgba(242,237,228,0.06); border-bottom-color: rgba(192,57,43,0.5); border-radius: 50%; animation: spin 2.2s linear infinite reverse; position: absolute; top: 12px; left: 12px; }
+    .badge-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 2.4rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-eyebrow { font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--red); margin-bottom: 0.75rem; }
+    .loading-title { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 900; line-height: 1.1; margin-bottom: 0.75rem; }
+    .loading-title em { font-style: italic; color: var(--red); }
+    .loading-subtitle { font-size: 0.78rem; color: rgba(242,237,228,0.45); letter-spacing: 0.04em; line-height: 1.7; margin-bottom: 2rem; }
+    .diff-tag { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.3rem 0.9rem; border: 1px solid rgba(242,237,228,0.15); color: rgba(242,237,228,0.4); margin-bottom: 2rem; }
+    .steps-list { width: 100%; display: flex; flex-direction: column; border: 1px solid rgba(242,237,228,0.1); margin-bottom: 1.5rem; }
+    .step-row { display: flex; align-items: center; gap: 1rem; padding: 0.7rem 1.25rem; border-bottom: 1px solid rgba(242,237,228,0.06); font-size: 0.72rem; letter-spacing: 0.05em; color: rgba(242,237,228,0.3); transition: color 0.4s; }
+    .step-row:last-child { border-bottom: none; }
+    .step-row.active { color: rgba(242,237,228,0.9); }
+    .step-row.complete { color: rgba(242,237,228,0.45); }
+    .step-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(242,237,228,0.15); flex-shrink: 0; transition: background 0.4s; }
+    .step-row.active .step-dot { background: var(--red); animation: pulse 1s ease infinite; }
+    .step-row.complete .step-dot { background: rgba(242,237,228,0.3); }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.7)} }
+    .step-check { margin-left: auto; font-size: 0.7rem; opacity: 0; transition: opacity 0.4s; color: #5cb85c; }
+    .step-row.complete .step-check { opacity: 1; }
+    .status-text { font-size: 0.65rem; color: rgba(242,237,228,0.3); letter-spacing: 0.08em; margin-bottom: 1.5rem; min-height: 1.2em; }
+    .ticker { font-size: 0.65rem; letter-spacing: 0.1em; color: rgba(242,237,228,0.2); overflow: hidden; white-space: nowrap; width: 100%; border-top: 1px solid rgba(242,237,228,0.06); padding-top: 1rem; }
+    .ticker-inner { display: inline-block; animation: ticker 18s linear infinite; }
+    @keyframes ticker { from{transform:translateX(100%)} to{transform:translateX(-100%)} }
+    .abort-link { margin-top: 1.5rem; font-size: 0.65rem; letter-spacing: 0.1em; color: rgba(242,237,228,0.2); text-decoration: none; text-transform: uppercase; transition: color 0.2s; }
+    .abort-link:hover { color: var(--red); }
+  </style>
+</head>
+<body>
+  <div class="loading-wrap">
+    <div class="badge-wrap">
+      <div class="badge-ring"></div>
+      <div class="badge-ring-2"></div>
+      <div class="badge-icon">🕵️</div>
+    </div>
+    <p class="loading-eyebrow">DeepSeek R1 — Case Generation</p>
+    <h1 class="loading-title">Building Your<br><em>Investigation</em></h1>
+    <p class="loading-subtitle">The AI is constructing a unique crime, planting evidence,<br>and hiding the truth somewhere in the details.</p>
+    <div class="diff-tag">Difficulty: <%= difficulty %></div>
+    <div class="steps-list">
+      <div class="step-row" id="step-0"><span class="step-dot"></span><span>Generating crime scenario &amp; suspects</span><span class="step-check">✓</span></div>
+      <div class="step-row" id="step-1"><span class="step-dot"></span><span>Planting clues &amp; evidence chains</span><span class="step-check">✓</span></div>
+      <div class="step-row" id="step-2"><span class="step-dot"></span><span>Writing suspect dialogues</span><span class="step-check">✓</span></div>
+      <div class="step-row" id="step-3"><span class="step-dot"></span><span>Hiding the guilty party</span><span class="step-check">✓</span></div>
+      <div class="step-row" id="step-4"><span class="step-dot"></span><span>Validating case integrity</span><span class="step-check">✓</span></div>
+    </div>
+    <p class="status-text" id="statusText">Contacting AI model...</p>
+    <div class="ticker"><span class="ticker-inner">CLASSIFIED &nbsp;·&nbsp; CASE FILE GENERATING &nbsp;·&nbsp; DO NOT DISTRIBUTE &nbsp;·&nbsp; SUSPECT PROFILES LOADING &nbsp;·&nbsp; EVIDENCE CHAIN COMPILING &nbsp;·&nbsp; AI MODEL: DEEPSEEK-R1:8B &nbsp;·&nbsp; CONFIDENTIAL &nbsp;·&nbsp;</span></div>
+    <a href="/" class="abort-link">✕ Cancel &amp; return home</a>
+  </div>
+
+  <script>
+    const steps      = document.querySelectorAll('.step-row');
+    const statusEl   = document.getElementById('statusText');
+    let currentStep  = 0;
+    let pollTimer    = null;
+
+    // Animate steps forward every 8s (covers ~40s of wait)
+    function advanceStep() {
+      if (currentStep > 0) {
+        steps[currentStep - 1].classList.remove('active');
+        steps[currentStep - 1].classList.add('complete');
+      }
+      if (currentStep < steps.length) {
+        steps[currentStep].classList.add('active');
+        currentStep++;
+        if (currentStep < steps.length) setTimeout(advanceStep, 8000);
+      }
+    }
+    setTimeout(advanceStep, 400);
+
+    // Fire-and-forget POST to kick off generation on server
+    // We don't care about the response here — polling handles completion
+    fetch('/game/generate/start', { method: 'POST' })
+      .then(() => { statusEl.textContent = 'AI is thinking... this takes 1-3 mins'; })
+      .catch(() => { statusEl.textContent = 'AI is working...'; });
+
+    // Poll /game/status every 5 seconds
+    function poll() {
+      fetch('/game/status')
+        .then(r => r.json())
+        .then(data => {
+          if (data.ready) {
+            steps.forEach(s => { s.classList.remove('active'); s.classList.add('complete'); });
+            statusEl.textContent = data.error ? 'Loading fallback case...' : 'Case ready!';
+            setTimeout(() => { window.location.href = '/game'; }, 800);
+          } else {
+            pollTimer = setTimeout(poll, 5000);
+          }
+        })
+        .catch(() => { pollTimer = setTimeout(poll, 5000); });
+    }
+
+    // Start polling after 5s
+    setTimeout(poll, 5000);
+  </script>
+</body>
+</html>

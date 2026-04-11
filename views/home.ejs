@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DetectiveAI — The Investigation Begins</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+  <style>
+    /* ── RESET & BASE ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:        #0d0d0d;
+      --paper:      #f2ede4;
+      --paper-dark: #e8e0d0;
+      --red:        #c0392b;
+      --red-dark:   #922b21;
+      --gold:       #b8972a;
+      --muted:      #7a7060;
+      --border:     #c8bfa8;
+      --shadow:     rgba(0,0,0,0.18);
+    }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--paper);
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23f2ede4'/%3E%3Ccircle cx='1' cy='1' r='0.6' fill='%23d8d0c0' opacity='0.4'/%3E%3C/svg%3E");
+      color: var(--ink);
+      font-family: 'Crimson Pro', Georgia, serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── HEADER ───────────────────────────────────────────── */
+    .site-header {
+      border-bottom: 2px solid var(--ink);
+      padding: 0.75rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--paper);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: var(--ink);
+    }
+
+    .logo-icon { font-size: 1.4rem; }
+
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-accent { color: var(--red); }
+
+    .site-nav { display: flex; align-items: center; gap: 1.5rem; }
+
+    .nav-link {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      text-decoration: none;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-link:hover, .nav-link--active { color: var(--ink); }
+
+    .name-form { display: flex; gap: 0.5rem; }
+
+    .name-input {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      padding: 0.35rem 0.75rem;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .name-input:focus { border-color: var(--ink); }
+    .name-input::placeholder { color: var(--muted); }
+
+    .btn-primary {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.35rem 0.9rem;
+      background: var(--ink);
+      color: var(--paper);
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: var(--red); }
+
+    .btn-ghost {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.35rem 0.9rem;
+      background: transparent;
+      color: var(--muted);
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
+
+    .player-greeting { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; }
+    .inline-form { display: inline; }
+
+    /* ── HERO ─────────────────────────────────────────────── */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: calc(100vh - 57px);
+    }
+
+    .hero-left {
+      padding: 5rem 3rem 4rem 4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-right: 2px solid var(--ink);
+      position: relative;
+    }
+
+    .hero-eyebrow {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 2rem;
+      height: 1.5px;
+      background: var(--red);
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.8rem, 5vw, 4.5rem);
+      font-weight: 900;
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--red);
+      display: block;
+    }
+
+    .hero-subtitle {
+      font-size: 1.15rem;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--muted);
+      max-width: 38ch;
+      margin-bottom: 2.5rem;
+    }
+
+    /* Redacted text effect */
+    .redacted {
+      background: var(--ink);
+      color: transparent;
+      user-select: none;
+      border-radius: 1px;
+      padding: 0 2px;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .stat-item { display: flex; flex-direction: column; gap: 0.2rem; }
+
+    .stat-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .stat-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    /* ── RIGHT PANEL — CASE FORM ──────────────────────────── */
+    .hero-right {
+      padding: 4rem 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: var(--paper-dark);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Decorative background text */
+    .hero-right::before {
+      content: 'CLASSIFIED';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-20deg);
+      font-family: 'Playfair Display', serif;
+      font-size: 6rem;
+      font-weight: 900;
+      color: var(--border);
+      opacity: 0.18;
+      letter-spacing: 0.15em;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .case-form-header {
+      margin-bottom: 2rem;
+    }
+
+    .case-form-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .case-form-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    /* ── DIFFICULTY CARDS ─────────────────────────────────── */
+    .difficulty-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .difficulty-card {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .difficulty-card input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .difficulty-card label {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      border: 1.5px solid var(--border);
+      background: var(--paper);
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .difficulty-card label:hover {
+      border-color: var(--ink);
+      background: var(--paper);
+    }
+
+    .difficulty-card input:checked + label {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .diff-icon {
+      font-size: 1.4rem;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+
+    .diff-content { flex: 1; }
+
+    .diff-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.2rem;
+    }
+
+    .diff-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.15rem 0.5rem;
+      border: 1px solid currentColor;
+      opacity: 0.6;
+    }
+
+    .diff-desc {
+      font-size: 0.85rem;
+      font-weight: 300;
+      line-height: 1.4;
+      opacity: 0.75;
+    }
+
+    .diff-meta {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.06em;
+      opacity: 0.55;
+      margin-top: 0.4rem;
+    }
+
+    /* ── START BUTTON ─────────────────────────────────────── */
+    .start-btn {
+      width: 100%;
+      padding: 1rem 2rem;
+      background: var(--red);
+      color: var(--paper);
+      border: none;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .start-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--red-dark);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+
+    .start-btn:hover::before { transform: scaleX(1); }
+    .start-btn:active { transform: scale(0.99); }
+
+    .start-btn span { position: relative; z-index: 1; }
+
+    .start-btn-note {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      text-align: center;
+      color: var(--muted);
+      margin-top: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── HOW IT WORKS ─────────────────────────────────────── */
+    .how-it-works {
+      border-top: 2px solid var(--ink);
+      padding: 4rem;
+    }
+
+    .section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+    }
+
+    .step {
+      padding: 1.5rem 2rem 1.5rem 0;
+      border-right: 1px solid var(--border);
+      padding-right: 2rem;
+      margin-right: 2rem;
+    }
+    .step:last-child { border-right: none; margin-right: 0; padding-right: 0; }
+
+    .step-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--border);
+      line-height: 1;
+      margin-bottom: 0.75rem;
+    }
+
+    .step-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .step-desc {
+      font-size: 0.9rem;
+      font-weight: 300;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    /* ── FOOTER ───────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-text {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    /* ── ANIMATIONS ───────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-eyebrow  { animation: fadeUp 0.5s ease both; animation-delay: 0.1s; opacity: 0; }
+    .hero-title    { animation: fadeUp 0.5s ease both; animation-delay: 0.2s; opacity: 0; }
+    .hero-subtitle { animation: fadeUp 0.5s ease both; animation-delay: 0.3s; opacity: 0; }
+    .hero-stats    { animation: fadeUp 0.5s ease both; animation-delay: 0.4s; opacity: 0; }
+    .hero-right    { animation: fadeUp 0.5s ease both; animation-delay: 0.2s; opacity: 0; }
+
+    /* ── RESPONSIVE ───────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-left { border-right: none; border-bottom: 2px solid var(--ink); padding: 3rem 2rem; }
+      .hero-right { padding: 3rem 2rem; }
+      .steps-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
+      .step { border-right: none; padding-right: 0; margin-right: 0; }
+      .how-it-works { padding: 3rem 2rem; }
+      footer { padding: 1.5rem 2rem; flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+
+    @media (max-width: 600px) {
+      .site-header { padding: 0.75rem 1.25rem; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .hero-stats { gap: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── HEADER ──────────────────────────────────────────────── -->
+  <header class="site-header">
+    <a href="/" class="logo">
+      <span class="logo-icon">🕵️</span>
+      <span class="logo-text">Detective<span class="logo-accent">AI</span></span>
+    </a>
+
+    <nav class="site-nav">
+      <% if (locals.hasActiveGame) { %>
+        <a href="/game" class="nav-link">📋 Case Board</a>
+      <% } %>
+      <a href="/auth/history" class="nav-link">📁 History</a>
+
+      <div class="nav-player">
+        <% if (locals.playerName) { %>
+          <span class="player-greeting">🔎 <strong><%= playerName %></strong></span>
+          <form action="/auth/clearname" method="POST" class="inline-form">
+            <button type="submit" class="btn-ghost">Sign Out</button>
+          </form>
+        <% } else { %>
+          <form action="/auth/setname" method="POST" class="name-form">
+            <input type="text" name="playerName" placeholder="Enter detective name..." maxlength="30" class="name-input" required />
+            <button type="submit" class="btn-primary">Set Name</button>
+          </form>
+        <% } %>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ── FLASH ───────────────────────────────────────────────── -->
+  <% if (locals.flash && locals.flash.notice) { %>
+    <div style="background:var(--ink);color:var(--paper);font-family:'IBM Plex Mono',monospace;font-size:0.75rem;padding:0.6rem 2rem;text-align:center;letter-spacing:0.05em;">
+      <%= flash.notice %>
+    </div>
+  <% } %>
+
+  <!-- ── HERO ────────────────────────────────────────────────── -->
+  <section class="hero">
+
+    <!-- Left: copy -->
+    <div class="hero-left">
+      <p class="hero-eyebrow">AI-Generated Cases — No Two Alike</p>
+
+      <h1 class="hero-title">
+        Every Crime.<br>
+        <em>A New Mystery.</em>
+      </h1>
+
+      <p class="hero-subtitle">
+        An AI generates a fresh crime scene, suspects, and evidence chain every time you play.
+        You have a limited number of turns. Interrogate wisely.
+        The <span class="redacted">truth</span> is hidden — can you find it?
+      </p>
+
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-value">6</span>
+          <span class="stat-label">Max Turns</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">4</span>
+          <span class="stat-label">Action Types</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">∞</span>
+          <span class="stat-label">Unique Cases</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: start form -->
+    <div class="hero-right">
+      <div class="case-form-header">
+        <span class="case-form-label">New Investigation</span>
+        <h2 class="case-form-title">Choose Difficulty</h2>
+      </div>
+
+      <form action="/game/start" method="POST">
+        <div class="difficulty-grid">
+
+          <!-- Easy -->
+          <div class="difficulty-card">
+            <input type="radio" name="difficulty" id="diff-easy" value="easy" />
+            <label for="diff-easy">
+              <span class="diff-icon">🟢</span>
+              <div class="diff-content">
+                <div class="diff-name">
+                  Rookie
+                  <span class="diff-badge">Easy</span>
+                </div>
+                <div class="diff-desc">3 suspects, clear evidence chain, 1 red herring.</div>
+                <div class="diff-meta">7 turns &nbsp;·&nbsp; 7 clues &nbsp;·&nbsp; Good for first timers</div>
+              </div>
+            </label>
+          </div>
+
+          <!-- Medium -->
+          <div class="difficulty-card">
+            <input type="radio" name="difficulty" id="diff-medium" value="medium" checked />
+            <label for="diff-medium">
+              <span class="diff-icon">🟡</span>
+              <div class="diff-content">
+                <div class="diff-name">
+                  Detective
+                  <span class="diff-badge">Medium</span>
+                </div>
+                <div class="diff-desc">4 suspects, multi-step clue chain, 2 red herrings.</div>
+                <div class="diff-meta">6 turns &nbsp;·&nbsp; 10 clues &nbsp;·&nbsp; Recommended</div>
+              </div>
+            </label>
+          </div>
+
+          <!-- Hard -->
+          <div class="difficulty-card">
+            <input type="radio" name="difficulty" id="diff-hard" value="hard" />
+            <label for="diff-hard">
+              <span class="diff-icon">🔴</span>
+              <div class="diff-content">
+                <div class="diff-name">
+                  Inspector
+                  <span class="diff-badge">Hard</span>
+                </div>
+                <div class="diff-desc">5 suspects, deep prerequisite chains, 3 red herrings.</div>
+                <div class="diff-meta">5 turns &nbsp;·&nbsp; 13 clues &nbsp;·&nbsp; For veterans</div>
+              </div>
+            </label>
+          </div>
+
+        </div>
+
+        <button type="submit" class="start-btn">
+          <span>🔍 Begin Investigation</span>
+        </button>
+        <p class="start-btn-note">AI is generating a unique case — takes ~15 seconds</p>
+      </form>
+    </div>
+
+  </section>
+
+  <!-- ── HOW IT WORKS ─────────────────────────────────────────── -->
+  <section class="how-it-works">
+    <p class="section-label">How It Works</p>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-number">01</div>
+        <div class="step-title">Case Generated</div>
+        <div class="step-desc">An AI creates a unique crime — suspects, motives, alibis, and a hidden guilty party — every single game.</div>
+      </div>
+      <div class="step">
+        <div class="step-number">02</div>
+        <div class="step-title">Investigate</div>
+        <div class="step-desc">Use your limited turns to inspect the scene, review CCTV, analyze phone logs, or interrogate suspects.</div>
+      </div>
+      <div class="step">
+        <div class="step-number">03</div>
+        <div class="step-title">Piece It Together</div>
+        <div class="step-desc">Each clue unlocks the next. Evidence chains build logically — but red herrings will try to mislead you.</div>
+      </div>
+      <div class="step">
+        <div class="step-number">04</div>
+        <div class="step-title">Make Your Accusation</div>
+        <div class="step-desc">Name your suspect. The system reveals the truth and grades your detective work from S to D.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ───────────────────────────────────────────────── -->
+  <footer>
+    <span class="footer-text">DetectiveAI &nbsp;·&nbsp; Powered by DeepSeek R1 via Ollama</span>
+    <span class="footer-text">Every case is unique. Every clue matters.</span>
+  </footer>
+
+</body>
+</html>

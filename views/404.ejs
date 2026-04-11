@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DetectiveAI — Page Not Found</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:   #0d0d0d;
+      --paper: #f2ede4;
+      --red:   #c0392b;
+      --muted: #7a7060;
+    }
+
+    body {
+      background: var(--ink);
+      color: var(--paper);
+      font-family: 'IBM Plex Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Scanlines */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(255,255,255,0.015) 2px, rgba(255,255,255,0.015) 4px
+      );
+      pointer-events: none;
+    }
+
+    .big-number {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(6rem, 20vw, 14rem);
+      font-weight: 900;
+      line-height: 1;
+      color: var(--red);
+      opacity: 0.15;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      letter-spacing: -0.05em;
+      user-select: none;
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .eyebrow {
+      font-size: 0.62rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--red);
+    }
+
+    .title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .title em { font-style: italic; color: var(--red); }
+
+    .subtitle {
+      font-size: 0.78rem;
+      color: rgba(242,237,228,0.35);
+      letter-spacing: 0.05em;
+      line-height: 1.8;
+      max-width: 36ch;
+    }
+
+    .divider {
+      width: 3rem; height: 1px;
+      background: rgba(242,237,228,0.12);
+      margin: 0.5rem 0;
+    }
+
+    .btn-home {
+      margin-top: 0.5rem;
+      padding: 0.7rem 2rem;
+      background: var(--red);
+      color: var(--paper);
+      border: none;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: opacity 0.2s;
+    }
+    .btn-home:hover { opacity: 0.8; }
+  </style>
+</head>
+<body>
+
+  <div class="big-number">404</div>
+
+  <div class="content">
+    <p class="eyebrow">Error 404 — Evidence Not Found</p>
+    <h1 class="title">This page has<br><em>gone missing.</em></h1>
+    <div class="divider"></div>
+    <p class="subtitle">
+      The page you're looking for left no trace.<br>
+      No clues. No witnesses. No CCTV footage.<br>
+      Some cases go cold.
+    </p>
+    <a href="/" class="btn-home">← Return to HQ</a>
+  </div>
+
+</body>
+</html>

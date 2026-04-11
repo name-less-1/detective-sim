@@ -1,0 +1,31 @@
+detective-sim/
+├── src/
+│   ├── cases/
+│   │   ├── caseSchema.js           ← Joi/Zod validation schema
+│   │   └── case_001.js             ← First case definition
+│   ├── engine/
+│   │   ├── gameEngine.js           ← Create/mutate game state
+│   │   ├── actionResolver.js       ← Maps action → clue
+│   │   └── verdictEngine.js        ← Evaluates accusation
+│   ├── routes/
+│   │   ├── gameRoutes.js           ← /game/* endpoints
+│   │   └── authRoutes.js           ← Optional login
+│   ├── middleware/
+│   │   └── gameGuard.js            ← Protect game routes
+│   ├── services/
+│   │   └── llmService.js           ← LLM stub (future AI)
+│   └── utils/
+│       └── shuffle.js              ← Fisher-Yates for clues
+├── views/
+│   ├── partials/
+│   ├── home.ejs
+│   ├── game.ejs
+│   └── verdict.ejs
+├── public/
+│   ├── css/
+│   ├── js/
+│   └── images/
+├── app.js                          ← Express setup
+├── server.js                       ← Bind port & listen
+├── .env                            ← SESSION_SECRET, API keys
+└── package.json
