@@ -49,7 +49,12 @@
     @keyframes ticker { from{transform:translateX(100%)} to{transform:translateX(-100%)} }
     .abort-link { margin-top: 1.5rem; font-size: 0.65rem; letter-spacing: 0.1em; color: rgba(242,237,228,0.2); text-decoration: none; text-transform: uppercase; transition: color 0.2s; }
     .abort-link:hover { color: var(--red); }
-  </style>
+	@media (max-width: 768px) {
+      .loading-wrap { padding: 2rem 1.5rem; width: 100%; }
+      .steps-list { width: 100%; }
+    }
+ 
+ </style>
 </head>
 <body>
   <div class="loading-wrap">
@@ -97,7 +102,7 @@
     // Fire-and-forget POST to kick off generation on server
     // We don't care about the response here — polling handles completion
     fetch('/game/generate/start', { method: 'POST' })
-      .then(() => { statusEl.textContent = 'AI is thinking... this takes 1-3 mins'; })
+      .then(() => { statusEl.textContent = 'AI is generating your case...'; })
       .catch(() => { statusEl.textContent = 'AI is working...'; });
 
     // Poll /game/status every 5 seconds
