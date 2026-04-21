@@ -12,7 +12,7 @@
  */
 function gameGuard(req, res, next) {
   // These routes don't need an active game
-  const openPaths = ['/loading', '/status', '/start', '/generate/start'];
+  const openPaths = ['/loading', '/status', '/start', '/generate/start', '/ai-solve'];
   if (openPaths.includes(req.path)) return next();
 
   if (!req.session.gameState || !req.session.activeCase) {
